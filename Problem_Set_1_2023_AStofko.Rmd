@@ -58,7 +58,7 @@ list.files()
 #### Let's import that dataset to R
 #### And check the first few lines with the function head()<br>
 ```{r import}
-KG_Samples = read.table("/Users/andreastofko/Desktop/bmi-stats/BMI Stats/igsr_samples.tsv",sep = "\t", header = T)
+KG_Samples = read.table("igsr_samples.tsv",sep = "\t", header = T)
 head(KG_Samples)
 ```
 
