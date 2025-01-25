@@ -177,12 +177,15 @@ nrow(diabetes[diabetes$Outcome==1 & diabetes$BMI>=40,]) ##146
 nrow(diabetes[diabetes$Outcome==0 & diabetes$Age<30,]) ##834
 
 ###############The code below will guide you through the steps to run and visualize a naive bayes classifier
+#machine learning classifier
 
-library(mice)
+library(mice) #used to impute missing data - use the mean of distribution for NA
+?mice
 library(caret)
-###We need to impute missing values to run tha naive bayes
+
+###We need to impute missing values to run naive bayes
 ##can use multiple approaches (k-mers, nearest neighbors)
-mice_mod <- mice(diabetes[, c("Glucose","BloodPressure","SkinThickness","Insulin","BMI")], method='rf')
+mice_mod <- mice(diabetes[, c("Glucose","BloodPressure","SkinThickness","Insulin","BMI")], method='rf') #these are the variables with missing data
 ?mice
 mice_complete <- complete(mice_mod)
 ?complete
@@ -193,38 +196,39 @@ diabetes$SkinThickness = mice_complete$SkinThickness
 diabetes$BMI = mice_complete$BMI
 diabetes$Insulin = mice_complete$Insulin
 
-
 ##Any missing data
 missmap(diabetes)
-##Let's Build the naive bayes Classifier
 
+##Let's Build the naive bayes Classifier
 #Building a model
 #split data into training and test data sets you set the partition in this case we will do 75-25
 
 set.seed(998)
-indxTrain <- createDataPartition(y = diabetes$Outcome,p = 0.75,list = FALSE)
-training <- diabetes[indxTrain,]
-testing <- diabetes[-indxTrain,]
+indxTrain <- createDataPartition(y = diabetes$Outcome,p = 0.75,list = FALSE) #create a vector of the indeces of pts who are used for training data (75%)
+training <- diabetes[indxTrain,] #subset on those = 1500
+testing <- diabetes[-indxTrain,] #subset on the rest = 500
 
 #Check dimensions of the split
-
 prop.table(table(diabetes$Outcome)) * 100
 prop.table(table(training$Outcome)) * 100
 prop.table(table(testing$Outcome)) * 100
+#proportions remain the same in the training and test data sets
 
 #create objects x which holds the predictor variables and y 
 #which holds the response variables
-x = training[,-9]
-y = training$Outcome
+x = training[,-9] #x is all variables except outcome (right of comma includes all columns except 9)
+y = training$Outcome #Y is a factor with two levels
+
+#x has the 8 variables but not the outcome variable,
+#y is the dependent variable
 
 ###Run the naive bayes algorithm on the training dataset using a resampling method, remember the goal is to maximize
 ##The class prediction.
-model = train(x,y,'naive_bayes',trControl=trainControl(method='cv',number=10))
+model = train(x,y,'naive_bayes',trControl=trainControl(method='cv',number=10)) #10-fold cross validation
 
 #Model Evaluation
 #Predict using the testing set
 Predict <- predict(model,newdata = testing )
-
 
 
 #Get the confusion matrix to see accuracy value and other parameter values
@@ -233,7 +237,7 @@ confusionMatrix(Predict, testing$Outcome )
 
 
 #Plot Variable performance
-X <- varImp(model)
+X <- varImp(model) #RF Variable Importance for Arbitrary Measures
 plot(X)
 
 ###It appears that glucose concentration and age are the top two variables. Lets see a scatterplot of these two
@@ -263,6 +267,9 @@ library(pROC)
 roc_ = roc(testing$Outcome,predict(model, newdata = testing, type ="prob")[,2])
 
 plot(roc_,print.auc=T)
+
+#diagnostic plot to evaluate how a classifier is working,
+#area under the curve is the accuracy - plots sensitivity vs specificity(relates to true positives and false negatives)
 
 
 
