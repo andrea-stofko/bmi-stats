@@ -166,7 +166,12 @@ diabetes = diabetes %>%
   mutate(dmHT = if_else(condition = Outcome ==1 & BloodPressure > 100, 1,
          if_else(condition = Outcome ==1 & BloodPressure <= 100, 2,3)))
 
-head(diabetes, 10)
+head(diabetes, 2)
+
+# Pregnancies Glucose BloodPressure SkinThickness Insulin  BMI DiabetesPedigreeFunction Age Outcome dmHT
+#1           6     148            72            35       0 33.6                    0.627  50       1    2
+#2           1      85            66            29       0 26.6                    0.351  31       0    3
+
 
 #### 6. Construct two plots of the distribution of BMI for individuals with diabetes and without diabetes<br><br>
 diabetes$Outcome = as.factor(diabetes$Outcome)
