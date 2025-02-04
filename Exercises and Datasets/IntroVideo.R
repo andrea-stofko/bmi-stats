@@ -152,8 +152,35 @@ data3 = c(1,2,3)
 data_Total = data.frame(data1, data2, data3)
 
 
-
+#call columns in data set
 BirdMalaria$bird
+
+
+#class
+class(BirdMalaria)
+#data.frames
+
+#load dataset
+?mtcars
+view(mtcars)
+
+#how to index dataframes
+mtcars[1,2] #first row of second column
+mtcars[1,] #all values for that row
+
+#sort from smallest to largest
+sort(mtcars[,1], decreasing = T)
+
+#create new variable
+L = mtcars$am==0
+
+mtcars[L,]$mpg
+
+#create subset of dataframe
+mtcars_mpg3 = subset(mtcars,mpg>20)
+
+mtcars_mpg4 = subset(mtcars, mpg>20 & cyl ==6)
+
 
 
 
