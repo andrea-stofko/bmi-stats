@@ -1,0 +1,420 @@
+---
+title: "Problem Set 2"
+author: "Andrea Stofko"
+uID: "u6040357"
+email: "andrea.stofko@utah.edu"
+date: "2025-02-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(psych)
+library("gtsummary")
+library(bnlearn)
+```
+
+
+1. For Problem 1 questions, use the dataset for “Risk Factors Associated with Low Infant Birth Weight.” You should use R or Python to examine the dataset and answer the following questions. (30pts)
+
+
+This data frame contains the following columns:
+  ‘low’ indicator of birth weight less than 2.5 kg.
+  ‘age’ mother's age in years.
+  ‘lwt’ mother's weight in pounds at last menstrual period.
+  ‘race’ mother's race (‘1’ = white, ‘2’ = black, ‘3’ = other).
+  ‘smoke’ smoking status during pregnancy. 1 = yes, 0 = no
+  ‘ptl’ number of previous premature labours.
+  ‘ht’ history of hypertension.
+  ‘ui’ presence of uterine irritability.
+  ‘ftv’ number of physician visits during the first trimester.
+  ‘bwt’ birth weight in grams.
+
+
+```{r}
+#Set working directory and load data
+setwd("/Users/andreastofko/Desktop/bmi-stats/BMI Stats/Homework/Homework 2")
+
+#load data (text file)
+birth_weight <- read.delim2("birthwt.txt",header = TRUE, sep = "", dec = ".")
+```
+
+1A. How many observations are in the dataset?
+
+```{r}
+print(nrow(birth_weight))
+```
+1a. Answer: There are 189 observations in the dataset.
+
+
+1b.Examine each column(variable), determine what type of variable each represents, and indicate whether each one is discrete or continuous. Then, go on to determine the following distribution or descriptive statistics as appropriate:
+
+For Discrete Variables: 
+•Indicate whether the feature is nominal, ordinal, or binary
+•How many levels each variable has
+
+For Continuous variables:
+Determine the mean, standard deviation, and median
+
+
+Answer:
+Continuous variables:
+-Age: age is a range 
+-lwt: mother's weight is also a range that incorporates non-whole numbers
+-bwt: weight can be a range and is therefore a continuous variable
+
+Discrete variables: 
+-low: this variable is binary and birth weight can either be 1 or 0 (low or high)
+-race: this variable can only be 1,2,or 3 and is, therefore, discrete
+-smoke: this variable is binary and can only be 1 or 0, making it discrete
+-ptl: number of premature labors:this can only be a whole number and is therefore a discrete variable
+-ht: a history of hyptertension is binary and therefore is a discrete variable
+-ui: the presence of uterine irritability is binary and therefore a discrete variable
+-ftv: number of physician visits is something that can only be a whole number and is therefore discrete
+
+
+Discrete variable types:
+•low: binary variable with two levels
+•race: nominal variable with 3 levels
+•smoke: binary variable with 2 levels
+•ptl: ordinal variable without a set number of levels
+•ht: binary variable with 2 levels
+•ui:binary variable with 2 levels
+•ftv: ordinal variable without a set number of levels
+
+
+For continuous variables: determine the mean, standard deviation, and median
+•find stats for age, lwt, bwt
+
+```{r Summary_Age}
+#summarize age
+summary_Age <- birth_weight %>% #create new df from main df
+  summarize(mean = mean(age), std_dev = sd(age), median = med(age)) #get summmary statistics
+print(summary_Age) #print results
+```
+Age:
+mean = 23.2381, st dev = 5.298678, median = 23
+
+
+```{r Summary_lwt} 
+#mother's weight at last menstrual cycle
+summary_lwt <- birth_weight %>% #create new df from birth_weight df
+  summarize(mean = mean(lwt), std_dev = sd(lwt), med = median(lwt)) #get summary stats for 'lwt'
+print(summary_lwt) #print results
+```
+lwt:
+mean = 129.8148, st dev = 30.57938, median = 121
+
+```{r summary_bwt}
+#birthweight in grams
+summary_bwt <- birth_weight %>%
+  summarize(mean = mean(bwt), std_dev = sd(bwt), med = median(bwt))
+print(summary_bwt)
+```
+bwt:
+mean = 2944.656, st dev =	729.0224, median = 2977
+
+
+1C. How many individuals older than 30 smoke?
+```{r smokers}
+smokers30 <-birth_weight %>% #use birth_weight dataset
+    filter(smoke==1) %>% #create filter of those who smoke (smoke = 1)
+    filter(age > 30) %>% #find those over 30
+    tally() #total using tally() function
+print(smokers30) #there are 8 individuals
+```
+There are 8 individuals over 30 who smoke.
+
+
+1D. Plot a histogram for birth weight. 
+
+```{r}
+
+ggplot(data = birth_weight, mapping = aes(x = bwt)) + #use birthweight data, bwt variable
+  geom_histogram(color = "white", bins =10)+
+  theme_classic()
+
+```
+
+1G. Calculate the probability of randomly selecting an individual that has either a low birth weight or a mother who was a smoker.
+
+```{r}
+#let's table these two variables to see the counts for each condition
+print(table(birth_weight$low))
+print(table (birth_weight$smoke))
+```
+
+```{r}
+#set up calculations based off of results:
+#We will use the addition rule since we want the probability of either of these events occuring
+pLWT <- (59/189) #low birth weight
+pSmoke <- (74/189) #smoker variable 
+pBpA <- pLWT + pSmoke #add the probabilities
+pBpA #return value
+```
+The probability that we randomly select an individual that is either a low birth weight or a smoker is 70.4%
+
+
+1H. Calculate the probability of randomly selecting an individual that is white and has more than 3 physician visits during the first trimester.
+
+```{r}
+#How many individuals are white? (Race =1)
+birth_weight %>%
+  filter(race==1) %>%
+  tally()
+```
+There are 96 individuals that are white
+
+```{r}
+
+#define value for > 3 physician visits (value = ftv)
+birth_weight %>%
+  filter(ftv > 3) %>%
+  tally()
+```
+There are 5 individuals with greater than 3 visits in the first trimester
+
+
+```{r}
+
+#define probability of selecting a white individual:
+pWhite <- 96/189
+
+#define probability of selecting a patient that had more than 3 visits 
+p3 <- 5/189
+
+#Because we want to look at the probability of selecting an individual with both these conditions,
+#we need to multiply the probabilities 
+
+pW3 <- pWhite * p3
+pW3
+```
+
+There is a 1.3% chance of selecting an individual that is white and has had more than 3 visits in the first trimester.
+
+
+2A. What is the probability that given a positive mammogram exam, a woman has a positive cancer diagnosis? Assume that the breast cancer incidence rate is 1%, the positivity rate for the exam if a patient has cancer is 90%, and there is a false positive rate of 8% for the exam. (10 pts)
+
+```{r}
+#cancer incidence rate:
+pC <- 0.01 #probability of having cancer
+pNC <- 0.99 #probability of being health
+
+
+#test specificity
+pTP <- 0.9 #probability of a true positive
+pFP <- 0.08 #probability of a false positive
+```
+
+Use Bayes theorem to solve what the rate is of having a positive cancer diagnosis given a positive mammogram exam:
+
+```{r}
+#calculate the probability of caner given postive test result (pCP)
+pCP <- (pC*pTP)/((pC*pTP)+(pNC*pFP))
+pCP
+```
+The probability of having cancer given a positive test result is 10.2%
+
+
+
+2B. For every attempt to call your friend, there is a 70% probability of actually speaking with them. Calculate the probability of having exactly 12 successes in 20 attempts. (10 pts)
+
+```{r}
+
+#dbinom(k, n, p)
+
+#probability of speaking/not speaking:
+0.70 #probability of speaking to friend (prob)
+12 #number of successes (x)
+20 #number of attempts (successes)
+
+dbinom(x=12, size=20, prob = 0.7)
+```
+The probability of your friend picking up exactly 12 times is 11.4%
+
+
+
+2C. The cholesterol levels of a group of patients are normally distributed with a mean of 200 mg/dL and a standard deviation of ##25 mg/dL. 
+
+1.	What is the probability that a randomly selected patient will have a cholesterol level between 180 mg/dL and 220 mg/dL? 
+2.	Additionally, calculate the interquartile range (IQR) of the cholesterol levels.
+3.	Discuss how these statistics can be used to identify patients at risk of cardiovascular diseases 
+4.	How the distribution might change if the standard deviation were reduced to 15 mg/dL? (10 pts)
+
+
+```{r}
+#2.1.	What is the probability that a randomly selected patient will have a cholesterol level between 180 mg/dL and 220 mg/dL? 
+?pnorm #use pnorm for normal distribution calculations
+
+p_180_2200 <- pnorm(220, 200, 25) - pnorm(180, 200, 25)
+p_180_2200
+
+```
+
+The probability of randomly selecting an individual with cholesterol between 180-220mg/dL is 57.6%
+
+
+```{r}
+#2.	Additionally, calculate the interquartile range (IQR) of the cholesterol levels.
+
+#IQR = mean +/- stdev
+mu <- 200  # Mean
+sigma <- 25  # Standard deviation
+
+q1 <- mu - sigma #lower quartile
+q3 <- mu + sigma #upper quartile
+
+print(q1) #return q1
+print(q3) #return q3
+
+iqr <- q3 - q1
+print(iqr)
+```
+The IQR is 50, with q1 = 175 and q3 = 225
+
+
+3.	Discuss how these statistics can be used to identify patients at risk of cardiovascular diseases 
+If the normal range is between 175-225 mg/dL, if a patient fell outside (above) this range it could indicate that they are
+at a higher risk for cardiovascular disease.
+
+
+4.	How the distribution might change if the standard deviation were reduced to 15 mg/dL? (10 pts)
+The interquartile range would be from 185-215mg/dL. It may appear that more people fall outside of this normal range.
+
+
+Part 1: Data Preparation and Exploration (5 pts)
+a) Load the dataset in your preferred language and perform an initial exploration. What are the dimensions of the dataset? Are there any missing values? (2 pts)
+
+```{r}
+bc <- read.csv("Breast_cancer_Naive.csv", header = TRUE)
+head(bc)
+```
+The data set has 589 observations of 32 variables.
+
+
+```{r}
+missmap(bc)
+```
+According to the graph, there is no missing data in the data set.
+
+
+b) Summarize the key characteristics of the dataset using appropriate descriptive statistics and visualizations. What are the distributions of numerical features? (2 pts)
+```{r}
+#use table summary to get a breakdown and IQRs for numerical variables
+bc %>%
+  tbl_summary()
+```
+
+Part 2: Naïve Bayes Classifier Implementation (15 pts)
+a.Preprocess the data for Naïve Bayes classification. Make sure to encode categorical variables (if any) and split the data into training and testing sets (70-30 split). Show your code and explain your preprocessing steps. (2 pts)
+
+```{r}
+#we don't need ID - drop column
+bc2 <- subset(bc, select = -id)
+head(bc2)
+```
+
+
+```{r}
+#convert categorical variables - for this data set, that will be diagnosis
+bc2$diagnosis <- recode(bc2$diagnosis, "B"=0, "M"=1)
+head(bc2)
+tbl_summary(bc2) #view new table stats
+```
+```{r}
+bc2 = bc2 %>% mutate_if(is.factor,as.numeric) #ensure everything is numeric
+```
+
+
+
+```{r}
+#split the data into 70:30 split
+set.seed(998)
+indxTrain <- createDataPartition(y = bc_final$diagnosis,p = 0.70,list = FALSE) #create a vector of the indeces of pts who are used for training data (70%)
+training <- bc_final[indxTrain,] 
+testing <- bc_final[-indxTrain,] 
+
+```
+
+```{r}
+#Check dimensions of the split
+prop.table(table(bc_final$diagnosis)) * 100
+prop.table(table(training$diagnosis)) * 100 
+prop.table(table(testing$diagnosis)) * 100
+```
+Results look as expected.
+
+
+
+b.Train a Naïve Bayes classifier. Which are the features with the highest contribution to the classifier? Report the accuracy, sensitivity, and specificity of your model. (3 pts)
+```{r}
+#create objects x which holds the predictor variables and y which holds the response variables
+x = training[,-1] #x is all variables except outcome 
+y = training$diagnosis 
+y<-factor(y) #change to factor - kept getting error when running model
+```
+
+#x has the 30 variables but not the outcome variable and y is the dependent variable (diagnosis)
+
+```{r}
+library("caret")
+```
+
+
+```{r}
+###Run the naive bayes algorithm on the training dataset by re-sampling
+model = train(x,y,method = 'naive_bayes',trControl=trainControl(method='cv',number=10)) #10-fold cross validation
+
+```
+
+
+
+```{r}
+#run the prediction using testing set
+Predict <- predict(model,newdata = testing )
+```
+
+
+
+```{r}
+#evaluate performance
+X <- varImp(model) #RF Variable Importance for Arbitrary Measures
+plot(X)
+```
+The variables that had the most contribution were perimeter_worst, radius_worst, and area_worst.
+
+
+```{r}
+#Create a scatterplot of these variables
+
+testing$prediction = as.character(Predict)
+testing$index = 1:nrow(testing)
+testing$logic = ifelse((testing$diagnosis==testing$prediction) & (testing$diagnosis==0),0,
+                       ifelse(testing$diagnosis==testing$prediction & testing$diagnosis==1,1,
+                              ifelse(!(testing$diagnosis==testing$prediction) & testing$diagnosis==0,2,3)))
+
+table(testing$logic)
+```
+
+```{r}
+ggplot(testing, aes(x=perimeter_worst, y=radius_worst,color = factor(logic))) + geom_point(size = 3)
+```
+
+
+```{r}
+library(pROC)
+roc_ = roc(testing$diagnosis,predict(model, newdata = testing, type ="prob")[,2])
+
+plot(roc_,print.auc=T)
+```
+
+The AUC is 0.995, indicating that the model's classifer is very efficient at distinguishing between malignant and benign tumors.
+
+
+
+

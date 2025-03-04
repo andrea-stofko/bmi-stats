@@ -8,7 +8,6 @@ library("mice")
 library("caret")
 library("psych")
 library("star")
-install.packages("gtsummary")
 library("gtsummary")
 
 ###1. We are going to use our use of R and probabilities to be able to determine which features help 
@@ -27,7 +26,8 @@ getwd() #looks good
 ##load csv (can call by document name once working directory is set)
 diabetes = read.csv("diabetes.csv", header = TRUE)
 
-head(diabetes)head(diabetes)head(diabetes)
+head(diabetes)
+head(diabetes)head(diabetes)
 
 #check datatype
 class(diabetes) #data.frame
@@ -123,7 +123,7 @@ diabetes$Outcome = as.factor(diabetes$Outcome)
 #rerun with outcome as factor
 diabetes %>%
   ggplot(aes(x=Outcome,y=Insulin, fill = Outcome)) + #expecting two outcomes
-  geom_boxplot() +theme_bw()+
+  geom_boxpl vbot() +theme_bw()+
   ggtitle("Box Plot")
 
 #find range
@@ -210,7 +210,7 @@ testing <- diabetes[-indxTrain,] #subset on the rest = 500
 
 #Check dimensions of the split
 prop.table(table(diabetes$Outcome)) * 100
-prop.table(table(training$Outcome)) * 100
+prop.table(table(training$Outcome)) * 100 
 prop.table(table(testing$Outcome)) * 100
 #proportions remain the same in the training and test data sets
 

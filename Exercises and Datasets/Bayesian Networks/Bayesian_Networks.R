@@ -7,13 +7,16 @@ library(RColorBrewer)
 library(tidyverse)
 
 
-setwd("/Users/andreastofko/Desktop/bmi-stats/BMI Stats/Exercises and Datasets")
+setwd("/Users/andreastofko/Desktop/bmi-stats/BMI Stats/Exercises and Datasets/Bayesian Networks")
 ##This dataset evaluate predictor that are believe to influence student scores
 Student_scores = read.csv("Student_scores.csv")
 
 M <-cor(Student_scores)
 corrplot(M, type="upper", order="hclust",
          col=brewer.pal(n=8, name="RdYlBu"))
+
+table(Student_scores$race)
+
 
 ##Let's look at the dataset and the variables associated to it...
 
@@ -28,6 +31,8 @@ data <- dummy_cols(Student_scores,
 #We can subset now to keep the variables we need only
 data2 = data[,c(2,5,7:21)]
 
+hist(data2$write)
+
 ##For the analysis we are going to run we want to discretize the continuous variables
 library(bnlearn)
 ##Split variables to discretize
@@ -39,11 +44,16 @@ data_ToDiscrete = data.frame(apply(data_ToDiscrete, 2, as.numeric))
 data_disc = discretize(data_ToDiscrete, 
                                   method = "hartemink", breaks = 2,
                                   ibreaks = 3, idisc = "quantile")
+table(data_disc$read)
 
 ##Combine binary and discretized variables
 data_final = cbind(data2[,c(1,2,8:17)],data_disc)
 
 data_final = data_final %>% mutate_if(is.factor,as.numeric)
+
+#generate correlation plots
+#however, the binary variables are not always the best predictors of correlation/assoication -
+#it's better to evaluate using a similarity index - Euclidean index?
 M2 <-cor(data_final)
 corrplot(M2, type="upper", order="hclust",
          col=brewer.pal(n=8, name="RdYlBu"))
@@ -55,6 +65,8 @@ data_final <- data_final %>% mutate_if(is.numeric,as.factor)
 
 ###Apply a bootstrapping approach with 500 runs, using the greedy HC algorithm
 net_bnlearn = boot.strength(data = data_final, R = 500, algorithm = "hc",algorithm.args = list(score = "bde",iss=10))
+
+#hill climbing algorithm will approximate 
 
 ##Query
 net_bnlearn[net_bnlearn$strength>0.85 & (net_bnlearn$direction>=0.5),]
@@ -72,11 +84,14 @@ avg.boot = averaged.network(net_bnlearn, threshold = 0.5)
 fitted = bn.fit(avg.boot, data_final, method = "bayes")
 
 ##One way to plot the network
+#install.packages("igraph")
+#install.packages("graph")
 library(graph)
 library(igraph)
-g <- igraph.from.graphNEL(as.graphNEL(fitted))
 
+g <- igraph::igraph.from.graphNEL(as.graphNEL(fitted))
 plot(g)
+
 
 
 ####We can use blacklists to remove those associations that we don't want evaluated in the network
@@ -186,6 +201,14 @@ cond2 = querygrain(setEvidence(net_fit_junction, nodes = c("race_1","socst"),
 
 RR = cond/cond2
 
+'''
+How to calculate reletive risk -- if the value is positive, there is an increased risk of a condition on the query. 
+Below 1 - there is a decreased risk (protective status) relative to the counter positive.
+The likihood to see low science scores, given that pt is race_1, socst is 2x bigger is the student is from the 
+opposite group.
+'''
+
+
 ##Absolute Risk
 ##We can calulate RR by dividing the conditional present by the conditional absent
 cond = querygrain(setEvidence(net_fit_junction, nodes = c("race_1","socst"),
@@ -195,6 +218,7 @@ cond = querygrain(setEvidence(net_fit_junction, nodes = c("race_1","socst"),
 baseline = querygrain(net_fit_junction, nodes = c("science"),
                                type = "marginal")[[1]][1]
 
+#HOW IS BASELINE DEFINED??
 AR = cond/baseline
 
 
