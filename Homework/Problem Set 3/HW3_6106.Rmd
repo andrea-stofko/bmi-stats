@@ -1,0 +1,92 @@
+---
+title: "HomeWork 3"
+output: 
+  html_document:
+    toc: true # table of content true
+    toc_depth: 2  # upto three depths of headings (specified by #, ## and ###)
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    df_print: paged
+  # 
+  # number_sections: true  ## if you want number sections at each table header
+  # theme: united  # many options for theme, this one is my favorite.
+  # highlight: tango  # specifies the syntax highlighting style
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#### We would like to include some instructions regarding submission of problem sets to be able to fairly, consistently and efficiently grade your assignments.
+
+#### 1. Please submit just one document this document can be an .R script or a format that allows evaluation of your code and data (Jupyter, python script, etc) with all the necessary text (answers, discussions, analysis) which can be added to the script as comments (remember that a comment starts with the # symbol in R)
+
+#### 2.Once you have solved a problem with the code and the result needs to be printed by just calling the variable created. For example, if you are calculating the mean of a distribution and save the result as variable a = mean(x) then the next line needs to be a call to a, either print(a) or just a, so that when we run the code to check on your work we can evaluate your responses correctly.
+
+#### 3.The final answer needs to be written down as a comment; just having the final number as an answer will result in point deductions as in most cases the question is not asking for a number but for a statistical analysis. Eg. The t-test had a p-value of 0.001 t = 4.6 n = 30 (this is the correct way to present the results from a t-test, you can also include the 95CI), which indicates that we reject the null hypothesis that the mean blood pressure in treatment 1 is the same as in the placebo group.
+
+#### 4.We will not accept screenshots of code or results.
+
+#### 5.If there are plots in the results, you don’t need to print the plots using a different document, just have the code and we will run it and see the plot that you created.
+
+#### 6.It is ok to work together and copy code from exercises, peers, class examples, etc, but it is not ok to copy identical workflows and answers from classmates. Copying another’s answers verbatim is considered plagiarism and will result in a zero for the assignment as well as other potential consequences according to Program and University guidelines. It is ok to use LLMs to help with the code, but not for the analysis, this should be your own.
+
+#### 7.The penalty for turning in a late assignment is 10% reduction in grade per day (see course syllabus). 
+<hr class="rounded">
+
+# HomeWork 3
+
+
+## 1.
+
+### A biomedical informatics researcher is investigating the relationship between smoking and multiple biological measurements. We want to compare the mean age for both smokers and non-smokers and we want to sample participants from each group proportionally to their representation in the population. The dataset smoking.csv contains this information, with two columns: "age" (numeric) and "smoking" (factor with 2 levels "0" and "1" [yes/no]). Answer the following questions using the concepts seen in class.
+
+#### 1. **Point Estimate:**
+####   Calculate the mean age for the entire population based on the collected sample.
+
+* Why is the sample mean considered an unbiased estimator of the population mean?
+* What are some potential sources of bias when estimating the mean age in **this** dataset?
+
+#### 2. **Random Sampling:**
+####   Randomly select a subset of 50 patients from the dataset without replacement. Calculate the mean age for this subset.
+
+* What are the potential consequences of sampling with versus without replacement?
+
+#### 3. **Resampling:**
+####   Perform bootstrapping on the entire dataset to estimate the sampling distribution of the mean age for the cohort Use 1000 bootstrap samples and calculate the mean age for each sample.
+
+* How does the number of bootstrap samples affect the accuracy of the estimated distribution? Demonstrate with this data. (Tip plot of means v # bootstrap samples)
+
+#### 4. **Confidence Intervals:**
+####   Calculate a 95% confidence interval for the population mean age level using the bootstrap distribution obtained in the previous step.
+
+* How does the width of a confidence interval change with different sample sizes?
+
+#### 5. **Standard Error of the Mean (SEM):**
+####   Calculate the standard error of the mean (SEM) of your estimate.
+
+* How is the standard error of the mean (SEM) different from the standard deviation?
+* Why is SEM a useful measure in hypothesis testing?
+
+## 2. 
+
+### Markov Chain: physical exercise training method A is used only 5% of the time, a person using method A will stay with this method 85% of the time, and a person not using method A will switch to method A about 65% time. At the beginning of the experiment only 5% of people used method A.
+
+#### 1. Generate a transition matrix for this Markov chain
+#### 2. Generate a transition plot (using R or by hand as an image it’s valid)
+#### 3. Plot the change in the probabilities over time for both methods until the 10th time unit.
+
+* What are the key properties of a transition matrix in a Markov chain?
+* What does it mean for a Markov chain to reach a steady-state distribution? When is this achieved in this analysis?
+
+## 3. 
+
+### Random Walk: Another simpler example of a random walk is a one-dimensional random walk. first we place a marker at zero (our initial state), we flip a coin, if it lands on heads, the marker is moved one unit to the right (1), if it lands on tails it is moved one unit to the left.
+
+#### 1. Generate a function that randomly draws from our initial state and populates a vector with the different transitions.
+
+#### 2. Generate a plot that shows 500 independent one-dimensional walks, differentiating walks that end above 0 or below 0.
+
+#### 3. What is the frequency of walks that ended in a positive cumulative count, in zero, or negative?
+
+* How does a random walk differ from a Markov process?

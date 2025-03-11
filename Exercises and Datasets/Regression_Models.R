@@ -40,7 +40,7 @@ cor.test(Pirates$global_average_temperature,Pirates$number_of_pirates)
 ##Simple Linear Regression
 
 ##set your directory to import the dataset
-setwd("/Users/javier/Documents/Jupyter/MBIO_6490_2023/R_Sessions/Week_4")
+setwd("/Users/andreastofko/Desktop/bmi-stats/BMI Stats/Exercises and Datasets")
 
 ##In this Dataset, Data collectors set up a laser sensor, 
 ##with breaks in the laser beam recording when a rail-trail user passed the data collection station.
@@ -59,6 +59,27 @@ mod <- lm(volume ~ hightemp, data = RailTrail)
 coef(mod) ##Extract the coefficients
 summary(mod)
 
+'''
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-254.562  -57.800    8.737   57.352  314.035 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  -17.079     59.395  -0.288    0.774    
+hightemp       5.702      0.848   6.724 1.71e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 104.2 on 88 degrees of freedom
+Multiple R-squared:  0.3394,	Adjusted R-squared:  0.3319 
+F-statistic: 45.21 on 1 and 88 DF,  p-value: 1.705e-09
+
+-- this model can only explain 34% of the variance in the
+   data
+'''
+
+
 ###Conclusions
 ##1. In the coldest days, when the high temperature was 0 Fahrenheit, 
 ##the mean rider frequency is -17 (this is not possible). 
@@ -71,14 +92,35 @@ summary(mod)
 plot(RailTrail$hightemp,RailTrail$volume)
 abline(mod, col = "red", lty = 4, lwd = 3)
 
+'''
+The residuals need to be normally distributed. The variance across the redisuals should be the same
+There should be independence in the patterns. 
+'''
+
+
 ##Let's look at the residual plot, using the linear model (mod)
 plot(mod)
 
+'''
+There is a lot of variance amongst the residuals. The residuals vs fitted plot 
+shows that there is not a linear relationship amongst the residuals.
+
+QQ-plot: shows if the residuals are normally distributed. In this scenario,
+they do not look perfectly normally distributed.
+
+Scale-location: is there homegenity of variance?
+
+Residuals vs 
+
+'''
+
+
 ##How about categorical variables
-table(RailTrail$weekday)
+table(RailTrail$weekday) #true if weekday, false if weekend
 
 mod2 = lm(volume ~ weekday, data = RailTrail)
 summary(mod2)
+
 ##The above result can be interpreted as we expect 80 less riders on weekdays 
 #(which was 1 in our variable) than on the weekend.
 
@@ -145,9 +187,20 @@ uscrimewor = UScrime[,-16]##Let's use the dataset without the dependent variable
 
 vif(uscrimewor)
 
+'''
+po1 and po2 are highly associated to the other variables in the dataset.
+We will remove them in the next section. 
+Variables that have a VIF over 10 are considered to be highly collinear. 
+'''
+
 ##We see that Po1 and 2 have high values (as a rule of thumb above 10 needs to be taking into consideration)
 ##Let's remove Po2, U2, and GPD in the new linear model
 crime_rate_lm2 = lm(y ~ M+So+Ed+Po1+LF+M.F+Pop+NW+U1+Ineq+Prob+Time,data = UScrime)
+
+'''
+Multi-collinearity will deflate relationships in the model and can obscure variables 
+that have an effect.
+'''
 
 summary(crime_rate_lm2)
 ##Compare adjusted R2
@@ -177,6 +230,9 @@ vif(uscrimewor[,-c(5,11,12)]) ##No VIF above 10
 crime_rate_lm3 = lm(y ~ M+So+Ed+Po1+LF+M.F+Pop+NW+U1+Ineq+Prob+Time+Prob*Time,data = UScrime)
 summary(crime_rate_lm3)
 
+'''
+colinear variables behave the same way. 
+'''
 
 #β0 is the predicted crime rate when all of the independent the variables equal zero:
 ##β1 = M = 3.22If we set all of the variables except for percentage of males aged 14–24 = 0 
@@ -199,11 +255,18 @@ library(NHANES)
 ?NHANES
 NHANES = read.csv("NHANES.csv")
 
+
+#remove duplicates:
+NHANES2 = unique(NHANES)
+
 ##Frequency of the dependent variable
-table(NHANES$Diabetes)
+table(NHANES2$Diabetes)
+
+library(dplyr)
+library(ggplot2)
 
 ##We want to convert to a numeric variable
-NHANES <- NHANES %>% mutate(has_diabetes = as.numeric(Diabetes == "Yes"))
+NHANES2 <- NHANES %>% mutate(has_diabetes = as.numeric(Diabetes == "Yes"))
 
 ##
 table(NHANES$has_diabetes)
@@ -218,7 +281,7 @@ logistic_plot = logistic_plot + xlab("Age (in years)")
 logistic_plot
 
 ##Let's run the model with BMI and Age
-logistic_reg2 <- glm(has_diabetes ~ BMI + Age, family = "binomial", data = NHANES) 
+logistic_reg2 <- glm(has_diabetes ~ BMI + Age, family = "binomial", data = NHANES2) 
 summary(logistic_reg2)
 
 ##The coefficient for AGE= 0.057278 which is interpreted as the expected change in log odds 
@@ -230,8 +293,8 @@ odd = exp(0.057278)
 
 ##Which variable is more important?
 
-ages <- range(~Age, data = NHANES) ##range of ages
-bmis <- range(~BMI, data = NHANES, na.rm = TRUE) ##range of BMI
+ages <- range(NHANES2$Age, na.rm = TRUE) ##range of ages
+bmis <- range(NHANES2$BMI, na.rm = TRUE) ##range of BMI
 res <- 100 
 
 ##Expand the range to 100 rows
@@ -248,7 +311,7 @@ head(y_hats) ##The y_hat variable are log_odds
 
 ###Let's plot the grid
 
-ggplot(data = NHANES, aes(x = Age, y = BMI)) +  ##Scatterplot Age v BMI
+ggplot(data = NHANES2, aes(x = Age, y = BMI)) +  ##Scatterplot Age v BMI
   geom_tile(data = y_hats, aes(fill = y_hat), color = NA) + ###Add predictions using tiles
   geom_count(aes(color = as.factor(has_diabetes)), alpha = 0.4) + ###Count the number of obs at each location and create two colors 0 or 1
   scale_fill_gradient(low = "white", high = "dodgerblue") + ##Change gradient color range
